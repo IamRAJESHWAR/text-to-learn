@@ -1,2 +1,6 @@
-# Ignore environment config
+node_modules/
 .env
+dist/
+build/
+.DS_Store
+# Ignore environment config
