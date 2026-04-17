@@ -1,20 +1,18 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-
-// Placeholder pages
-const Home = () => <div>Home Page</div>;
-const Course = () => <div>Course Overview Page</div>;
-const Lesson = () => <div>Lesson Viewer Page</div>;
+import HomePage from './pages/HomePage';
+import CoursePage from './pages/CoursePage';
+import LessonPage from './pages/LessonPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="courses/:courseId/module/:moduleIndex/lesson/:lessonIndex" element={<Lesson />} />
-          <Route path="courses/:courseId" element={<Course />} />
+          <Route index element={<HomePage />} />
+          <Route path="courses/:courseId" element={<CoursePage />} />
+          <Route path="courses/:courseId/module/:moduleIndex/lesson/:lessonIndex" element={<LessonPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
