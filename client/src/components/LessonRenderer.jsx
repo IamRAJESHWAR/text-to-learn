@@ -5,21 +5,74 @@ import CodeBlock from './blocks/CodeBlock';
 import VideoBlock from './blocks/VideoBlock';
 import MCQBlock from './blocks/MCQBlock';
 
-const LessonRenderer = ({ content }) => {
+const LessonRenderer = ({ content, mode = 'screen', onMcqSelect, mcqSelections, showQuizResult }) => {
+  const isPdf = mode === 'pdf';
   return (
     <div>
       {content.map((block, idx) => {
         switch (block.type) {
           case 'heading':
-            return <HeadingBlock key={idx} text={block.text} />;
+            return isPdf ? (
+              <div key={idx} style={{ breakInside: 'avoid', pageBreakInside: 'avoid', marginBottom: 12 }}>
+                <h2 style={{ margin: '0 0 8px', lineHeight: 1.3 }}>{block.text}</h2>
+              </div>
+            ) : (
+              <HeadingBlock key={idx} text={block.text} />
+            );
           case 'paragraph':
-            return <ParagraphBlock key={idx} text={block.text} />;
+            return isPdf ? (
+              <div key={idx} style={{ breakInside: 'avoid', pageBreakInside: 'avoid', marginBottom: 12 }}>
+                <p style={{ margin: 0, lineHeight: 1.5 }}>{block.text}</p>
+              </div>
+            ) : (
+              <ParagraphBlock key={idx} text={block.text} />
+            );
           case 'code':
-            return <CodeBlock key={idx} language={block.language} text={block.text} />;
+            return isPdf ? (
+              <div key={idx} style={{ breakInside: 'avoid', pageBreakInside: 'avoid', marginBottom: 12 }}>
+                <pre style={{ whiteSpace: 'pre-wrap', margin: 0, lineHeight: 1.4 }}>
+                  <code>{block.text}</code>
+                </pre>
+              </div>
+            ) : (
+              <CodeBlock key={idx} language={block.language} text={block.text} />
+            );
           case 'video':
-            return <VideoBlock key={idx} query={block.query} />;
+            return isPdf ? (
+              <div key={idx} style={{ breakInside: 'avoid', pageBreakInside: 'avoid', marginBottom: 12 }}>
+                <p style={{ margin: 0, lineHeight: 1.5 }}>Video: {block.query}</p>
+              </div>
+            ) : (
+              <VideoBlock key={idx} query={block.query} />
+            );
           case 'mcq':
-            return <MCQBlock key={idx} question={block.question} options={block.options} answer={block.answer} />;
+            return isPdf ? (
+              <div key={idx} style={{ breakInside: 'avoid', pageBreakInside: 'avoid', margin: '1em 0' }}>
+                <strong>{block.question}</strong>
+                <ul style={{ marginTop: 6, lineHeight: 1.5 }}>
+                  {block.options?.map((opt, optIdx) => (
+                    <li key={optIdx} style={{ marginBottom: 4 }}>{opt}</li>
+                  ))}
+                </ul>
+                {block.answer !== undefined && block.answer !== null && (
+                  <div>
+                    Answer: {typeof block.answer === 'number' ? block.options?.[block.answer] : block.answer}
+                  </div>
+                )}
+                {block.explanation && <div>Explanation: {block.explanation}</div>}
+              </div>
+            ) : (
+              <MCQBlock
+                key={idx}
+                question={block.question}
+                options={block.options}
+                answer={block.answer}
+                explanation={block.explanation}
+                selectedIndex={mcqSelections?.[idx] ?? null}
+                onSelect={selection => onMcqSelect?.(idx, selection)}
+                showResult={showQuizResult}
+              />
+            );
           default:
             return null;
         }

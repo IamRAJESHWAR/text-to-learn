@@ -34,6 +34,9 @@ const SidebarNavigation = () => {
       
       <ul style={{ listStyle: 'none', padding: 0, flex: 1 }}>
         <li><Link to="/" style={linkStyle(isActive('/'))}>Home & Courses</Link></li>
+        {isAuthenticated && (
+          <li><Link to="/exams/jee-main" style={linkStyle(isActive('/exams/jee-main'))}>Exam Prep</Link></li>
+        )}
       </ul>
 
       <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: 20 }}>
@@ -59,7 +62,10 @@ const SidebarNavigation = () => {
               </div>
             </div>
             <button 
-              onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+              onClick={() => logout({
+                logoutParams: { returnTo: window.location.origin },
+                federated: true,
+              })}
               style={{ width: '100%', background: '#f1f5f9', color: '#475569', display: 'flex', justifyContent: 'center' }}
             >
               Log Out

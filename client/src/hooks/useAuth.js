@@ -22,5 +22,14 @@ export function useAuth() {
     }
   }
 
-  return { isAuthenticated, isLoading, user, loginWithRedirect, logout, getToken };
+  const login = (options = {}) =>
+    loginWithRedirect({
+      authorizationParams: {
+        prompt: 'login',
+        ...options.authorizationParams,
+      },
+      ...options,
+    });
+
+  return { isAuthenticated, isLoading, user, loginWithRedirect: login, logout, getToken };
 }

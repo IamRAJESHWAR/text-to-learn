@@ -2,7 +2,7 @@
 const Lesson = require('../models/Lesson');
 const Module = require('../models/Module');
 const Course = require('../models/Course');
-const { generateLesson } = require('../services/geminiService');
+const { generateLesson, generateMoreQuiz } = require('../services/geminiService');
 
 /**
  * POST /api/lessons/:lessonId/generate
@@ -48,4 +48,26 @@ async function getLessonById(req, res) {
   }
 }
 
-module.exports = { generateAndSaveLesson, getLessonById };
+/**
+ * POST /api/lessons/:lessonId/more-quiz
+ * Appends additional MCQs to an enriched lesson.
+ */
+async function addMoreQuizQuestions(req, res) {
+  try {
+    const lesson = await Lesson.findById(req.params.lessonId);
+    if (!lesson) return res.status(404).json({ error: 'Lesson not found' });
+
+    const existingMcqCount = (lesson.content || []).filter(b => b.type === 'mcq').length;
+    const result = await generateMoreQuiz(lesson.title, existingMcqCount);
+    const newMcqs = Array.isArray(result.mcqs) ? result.mcqs : [];
+
+    lesson.content = [...(lesson.content || []), ...newMcqs];
+    await lesson.save();
+
+    res.json(lesson);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to add quiz questions', details: err.message });
+  }
+}
+
+module.exports = { generateAndSaveLesson, getLessonById, addMoreQuizQuestions };

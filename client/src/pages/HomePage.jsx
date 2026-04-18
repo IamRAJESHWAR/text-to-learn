@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../hooks/useAuth';
 import { generateCourse, getUserCourses } from '../utils/api';
+import { EXAM_CARDS } from '../data/exams';
 
 const HomePage = () => {
   const { isAuthenticated, user, getToken, loginWithRedirect } = useAuth();
@@ -57,6 +58,22 @@ const HomePage = () => {
 
       {loading && <LoadingSpinner message="Generating your personalized course structure..." />}
       {error && <ErrorMessage message={error} />}
+
+      {isAuthenticated && (
+        <div style={{ marginTop: 40 }}>
+          <h2 style={{ marginBottom: 16 }}>Exam Prep Hub</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+            {EXAM_CARDS.map(card => (
+              <Link key={card.key} to={`/exams/${card.key}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="card" style={{ cursor: 'pointer', height: '100%' }}>
+                  <h3 style={{ color: 'var(--primary)', marginBottom: 8 }}>{card.name}</h3>
+                  <p style={{ fontSize: '0.9rem', color: '#64748b' }}>{card.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isAuthenticated && courses.length > 0 && !loading && (
         <div style={{ marginTop: 40 }}>

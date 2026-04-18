@@ -38,4 +38,43 @@ function generateLessonPrompt(course, module, lesson) {
 - Return only valid JSON, no markdown or extra text.`;
 }
 
-module.exports = { generateCoursePrompt, generateLessonPrompt };
+function generateExamMetadataPrompt(examName, modules) {
+  return `You are an exam course designer. Given the exam name "${examName}" and the syllabus modules/lessons below, return ONLY a JSON object with:
+{
+  "title": string,
+  "description": string,
+  "tags": [string]
+}
+
+Syllabus:
+${JSON.stringify(modules)}
+
+Rules:
+- Keep the title concise and exam-focused.
+- Description should mention full syllabus coverage with topic-wise lessons.
+- 5-8 short tags. Return valid JSON only.`;
+}
+
+function generateMoreQuizPrompt(lessonTitle, existingCount) {
+  return `You are an expert educator. Create 5 additional MCQs for the lesson titled "${lessonTitle}".
+Return ONLY a JSON object with:
+{
+  "mcqs": [
+    { "type": "mcq", "question": string, "options": [string], "answer": number, "explanation": string }
+  ]
+}
+
+Rules:
+- Do NOT repeat any of the previous questions.
+- Focus on key concepts, edge cases, and exam-style reasoning.
+- Keep options concise and unambiguous.
+- Return valid JSON only. Existing MCQ count: ${existingCount}.
+`;
+}
+
+module.exports = {
+  generateCoursePrompt,
+  generateLessonPrompt,
+  generateExamMetadataPrompt,
+  generateMoreQuizPrompt,
+};

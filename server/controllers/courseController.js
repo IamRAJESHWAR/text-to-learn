@@ -22,7 +22,7 @@ async function generateAndSaveCourse(req, res) {
       title: aiCourse.title,
       description: aiCourse.description,
       tags: aiCourse.tags || [],
-      creator: req.auth?.payload?.sub || 'anonymous',
+      creator: req.auth?.sub || 'anonymous',
     });
 
     // Save each Module and its skeleton Lessons
@@ -70,7 +70,7 @@ async function generateAndSaveCourse(req, res) {
  */
 async function getUserCourses(req, res) {
   try {
-    const creator = req.auth?.payload?.sub || 'anonymous';
+    const creator = req.auth?.sub || 'anonymous';
     const courses = await Course.find({ creator }).sort({ createdAt: -1 });
     res.json(courses);
   } catch (err) {

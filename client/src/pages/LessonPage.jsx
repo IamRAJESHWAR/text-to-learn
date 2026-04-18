@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getCourse, generateLessonContent } from '../utils/api';
+import { getCourse, generateLessonContent, generateMoreQuiz } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import LessonRenderer from '../components/LessonRenderer';
 import LessonPDFExporter from '../components/LessonPDFExporter';
@@ -17,6 +17,9 @@ const LessonPage = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [mcqSelections, setMcqSelections] = useState({});
+  const [quizChecked, setQuizChecked] = useState(false);
+  const [quizLoading, setQuizLoading] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -54,9 +57,40 @@ const LessonPage = () => {
     }
   };
 
+  const handleGenerateMoreQuiz = async () => {
+    if (!isAuthenticated) {
+      loginWithRedirect();
+      return;
+    }
+    setQuizLoading(true);
+    try {
+      const token = await getToken();
+      const updatedLesson = await generateMoreQuiz(lesson._id, token);
+      setLesson(updatedLesson);
+      setQuizChecked(false);
+      setMcqSelections({});
+    } catch (err) {
+      setError('Failed to generate more quiz questions.');
+    } finally {
+      setQuizLoading(false);
+    }
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!lesson) return <ErrorMessage message="Lesson not found." />;
+  const mcqBlocks = lesson.content?.filter(b => b.type === 'mcq') || [];
+  const totalQuestions = mcqBlocks.length;
+  const correctCount = (lesson.content || []).reduce((count, block, idx) => {
+    if (block.type !== 'mcq') return count;
+    const selected = mcqSelections[idx];
+    const answerIndex = typeof block.answer === 'number' ? block.answer : block.options?.indexOf(block.answer);
+    return selected !== undefined && selected === answerIndex ? count + 1 : count;
+  }, 0);
+
+  const handleMcqSelect = (index, selection) => {
+    setMcqSelections(prev => ({ ...prev, [index]: selection }));
+  };
 
   // Create full text for Hinglish TTS
   const fullText = lesson.content
@@ -79,9 +113,9 @@ const LessonPage = () => {
             {lesson.isEnriched && fullText && <HinglishAudioButton text={fullText} />}
             {lesson.isEnriched && (
               <LessonPDFExporter fileName={`${lesson.title}.pdf`}>
-                <div style={{ padding: 40, fontFamily: 'sans-serif', color: '#000' }}>
-                  <h1 style={{ marginBottom: 20 }}>{lesson.title}</h1>
-                  <LessonRenderer content={lesson.content} />
+                <div style={{ padding: 40, fontFamily: 'Arial, sans-serif', fontSize: 12, lineHeight: 1.5, color: '#111' }}>
+                  <h1 style={{ margin: '0 0 16px', fontSize: 20, lineHeight: 1.3 }}>{lesson.title}</h1>
+                  <LessonRenderer content={lesson.content} mode="pdf" />
                 </div>
               </LessonPDFExporter>
             )}
@@ -105,7 +139,36 @@ const LessonPage = () => {
           </div>
         ) : (
           <div className="lesson-content">
-            <LessonRenderer content={lesson.content} />
+            <LessonRenderer
+              content={lesson.content}
+              onMcqSelect={handleMcqSelect}
+              mcqSelections={mcqSelections}
+              showQuizResult={quizChecked}
+            />
+            {totalQuestions > 0 && (
+              <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button onClick={() => setQuizChecked(true)} disabled={quizChecked}>
+                    Check Quiz
+                  </button>
+                  <button
+                    onClick={() => {
+                      setQuizChecked(false);
+                      setMcqSelections({});
+                    }}
+                    disabled={!quizChecked}
+                  >
+                    Reset Quiz
+                  </button>
+                  {quizChecked && (
+                    <strong>Quiz Result: {correctCount}/{totalQuestions}</strong>
+                  )}
+                  <button onClick={handleGenerateMoreQuiz} disabled={quizLoading}>
+                    {quizLoading ? 'Generating Quiz...' : 'Generate More Quiz'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

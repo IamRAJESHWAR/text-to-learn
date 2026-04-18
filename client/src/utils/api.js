@@ -49,9 +49,66 @@ export async function generateLessonContent(lessonId, token) {
   return data;
 }
 
+export async function generateMoreQuiz(lessonId, token) {
+  const api = createApiClient(token);
+  const { data } = await api.post(`/api/lessons/${lessonId}/more-quiz`);
+  return data;
+}
+
 // ── Utility ───────────────────────────────────────────────────
 
 export async function getYouTubeVideo(query) {
   const { data } = await axios.get(`${API_BASE_URL}/api/youtube`, { params: { query } });
   return data.url;
+}
+
+// ── Exams API ─────────────────────────────────────────────────
+
+export async function getExamQuestions(params, token) {
+  const api = createApiClient(token);
+  const { data } = await api.get('/api/exams/questions', { params });
+  return data;
+}
+
+export async function getExamSyllabus(examKey, token) {
+  const api = createApiClient(token);
+  const { data } = await api.get(`/api/exams/${examKey}/syllabus`);
+  return data;
+}
+
+export async function generateExamCourse(examKey, token) {
+  const api = createApiClient(token);
+  const { data } = await api.post(`/api/exams/${examKey}/generate-course`);
+  return data;
+}
+
+// ── Ask AI API ───────────────────────────────────────────────
+
+export async function askAi(payload, token) {
+  const api = createApiClient(token);
+  const { data } = await api.post('/api/ask', payload);
+  return data;
+}
+
+// ── Exam Papers API ──────────────────────────────────────────
+
+export async function getExamPapers(params, token, includeMine = false) {
+  const api = createApiClient(token);
+  const { data } = await api.get('/api/exams/papers', {
+    params: { ...params, includeMine },
+  });
+  return data;
+}
+
+export async function uploadExamPaper(payload, token) {
+  const api = createApiClient(token);
+  const formData = new FormData();
+  formData.append('exam', payload.exam);
+  formData.append('year', payload.year);
+  formData.append('title', payload.title);
+  formData.append('file', payload.file);
+  const { data } = await api.post('/api/exams/papers', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
 }

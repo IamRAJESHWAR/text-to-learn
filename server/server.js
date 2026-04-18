@@ -2,52 +2,50 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load environment variables from config/.env
+// Load environment variables
 dotenv.config({ path: path.join(__dirname, 'config', '.env') });
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// ─── API Routes ───────────────────────────────────────────────
-// Course routes (generate, list, get, delete)
+
+// API routes
 const courseRoutes = require('./routes/courses');
-app.use('/api', courseRoutes);
-
-// Lesson routes (get, generate content)
 const lessonRoutes = require('./routes/lessons');
-app.use('/api', lessonRoutes);
-
-// Hinglish TTS route
 const hinglishRoutes = require('./routes/hinglish');
-app.use('/api', hinglishRoutes);
-
-// YouTube video search route
 const youtubeRoutes = require('./routes/youtube');
-app.use('/api', youtubeRoutes);
-
-// Auth0 protected example route
 const protectedRoutes = require('./routes/protected');
+const examRoutes = require('./routes/exams');
+const askRoutes = require('./routes/ask');
+const examPaperRoutes = require('./routes/examPapers');
+
+app.use('/api', courseRoutes);
+app.use('/api', lessonRoutes);
+app.use('/api', hinglishRoutes);
+app.use('/api', youtubeRoutes);
 app.use('/api', protectedRoutes);
+app.use('/api', examRoutes);
+app.use('/api', askRoutes);
+app.use('/api', examPaperRoutes);
 
-// ─── Root endpoint ────────────────────────────────────────────
+// Serve uploaded papers
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Root endpoint
 app.get('/', (req, res) => {
-  res.send('Text-to-Learn Backend is running ✅');
+  res.send('Text-to-Learn Backend is running');
 });
 
-// ─── Global error handler ─────────────────────────────────────
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
-});
-
-// ─── Database & Server start ──────────────────────────────────
+// Database connection
 const connectDB = require('./config/db');
 connectDB();
 
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

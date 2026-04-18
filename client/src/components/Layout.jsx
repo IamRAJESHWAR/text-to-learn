@@ -2,6 +2,7 @@
 import React from 'react';
 import SidebarNavigation from './SidebarNavigation';
 import { Outlet } from 'react-router-dom';
+import AskAIWidget from './AskAIWidget';
 
 const Layout = () => (
   <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -9,6 +10,7 @@ const Layout = () => (
     <main style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
       <Outlet />
     </main>
+    <AskAIWidget />
   </div>
 );
 
