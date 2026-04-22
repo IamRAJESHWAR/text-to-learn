@@ -10,9 +10,14 @@ const path = require('path');
 dotenv.config({ path: path.join(__dirname, 'config', '.env') });
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+// Updated CORS to allow your specific Vercel frontend domain
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || 'https://text-to-learn-frontend.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 
+app.use(express.json());
 
 // API routes
 const courseRoutes = require('./routes/courses');
