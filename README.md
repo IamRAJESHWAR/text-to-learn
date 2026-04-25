@@ -28,4 +28,3 @@ This project is organized as a monorepo:
 - **Backend**: Deployed on your preferred Node.js hosting (e.g., Render, Railway).
 
 ---
-Built for the AZ Dev Hackathon.
